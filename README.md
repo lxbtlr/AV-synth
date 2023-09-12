@@ -12,8 +12,8 @@ First you will want to install nix (refer to nixos.com/download). Generally, thi
 ```
 Sick, now you can open a nix-shell with the preconfigured packages that we need for hydra, then follow their installation instructions. The former looks like:
 ```
-cd hydra
 nix-shell default.nix
+cd hydra
 ```
 The latter will look like:
 
