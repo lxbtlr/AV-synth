@@ -11,12 +11,14 @@ let
 in mkShell {
 
   packages = [
-    (pkgs.python3.withPackages (ps: [
+    (pkgs.python311.withPackages (ps: [
+      ps.selenium
+      ps.keyboard
       ps.numpy
       ps.pandas
       ps.requests
     ]))
-
+    geckodriver
   ];
   buildInputs = [
 
