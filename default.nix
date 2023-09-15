@@ -13,7 +13,9 @@ in mkShell {
   packages = [
     (pkgs.python311.withPackages (ps: [
       ps.selenium
-      ps.keyboard
+      ps.rich
+      ps.evdev
+      ps.pynput
       ps.numpy
       ps.pandas
       ps.requests
