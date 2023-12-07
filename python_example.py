@@ -1,12 +1,77 @@
-from evdev import InputDevice, categorize, ecodes
-import evdev
-import rich
-from rich.live import Live
-from rich.table import Table
 from pynput import keyboard
 from selenium import webdriver
 import time
+import sys
+import threading
+from Effects import *
 
+eff3 = "noise(3,0.1,7).rotate(1,-1,-2).mask(shape(20)).colorama(0.5).modulateScale(o0).modulateScale(o0,1,).blend(o0).blend(o0).blend(o0).blend(o0).out(o0)"
+eff1 = Eff1()
+eff2 = Eff2()
+eff3 = Eff3()
+eff4 = Eff4()
+eff5 = Eff5()
+eff6 = Eff6()
+eff7 = Eff7()
+eff8 = Eff8()
+eff9 = Eff9()
+eff10 = Eff10()
+eff11 = Eff11()
+eff12 = Eff12()
+eff13 = Eff13()
+eff14 = Eff14()
+eff15 = Eff15()
+eff16 = Eff16()
+eff17 = Eff17()
+eff18 = Eff18()
+
+currEffect = eff1
+effects_p1 = {'c':eff1, 'f': eff2, 'i': eff9, 'b':eff3, 'e':eff4, 'h':eff5, 'a':eff6, 'd':eff7, 'g':eff8}
+effects_p2 = {'c':eff10, 'f': eff11, 'i': eff12, 'b':eff13, 'e':eff14, 'h':eff15, 'a':eff16, 'd':eff17, 'g':eff18}
+CHANGED = False
+keypress_event = threading.Event()
+effects = effects_p1
+
+def on_press(key):
+    global currEffect
+    global effects
+    print('pressed')
+    try:
+        pressed = key.char.strip()
+        if pressed == '1':
+            keypress_event.set()
+            print('Decrement dial 1')
+            currEffect.modOne(-1)
+        elif pressed == '3':
+            keypress_event.set()
+            print('Increment dial 1')
+            currEffect.modOne(1)
+        elif pressed == '4':
+            keypress_event.set()
+            print('Decrement dial 2')
+            currEffect.modTwo(-1)
+        elif pressed == '6':
+            keypress_event.set()
+            print('Increment dial 2')
+            currEffect.modTwo(1)
+        elif pressed == '9':
+            keypress_event.set()
+            print('Decrement dial 3')
+            currEffect.modThree(-1)
+        elif pressed == '7':
+            keypress_event.set()
+            print('Increment dial 3')
+            currEffect.modThree(1)
+        elif pressed == '2':
+            effects = effects_p1
+        elif pressed == '5':
+            effects = effects_p2
+        elif pressed in effects:
+            keypress_event.set()
+            print('Switch!')
+            currEffect = effects[pressed]
+    except AttributeError:
+        pass
 
 def increment(val):
     if val >= 100:
@@ -20,54 +85,27 @@ def decrement(val):
         val = 0
     else:
         val -= 1
-    return val
-
-def generate_table(var1,var2) -> Table:
-    """Give us the state of our vars."""
-    table = Table()
-    table.add_column("Name")
-    table.add_column("Value")
-    
-    table.add_row(f"Dial 1",f"{var1}")
-    table.add_row(f"Dial 2",f"{var2}")
-    return table
-
+        return val
 
 if __name__ == "__main__":
-    dial_1 = 50
-    dial_2 = 50
     # Create a new instance of the Firefox driver
     driver = webdriver.Firefox()
     URL='http://127.0.0.1:8080'
     driver.get(URL)
     # driver.execute_script("hide()")
-    driver.execute_script("osc(10).out(o1)\nrender(o1)")
     time.sleep(1)
-    # driver.execute_script("vornoi(5,1,.3).out(o0)")
-    # driver.execute_script("osc(20).out(o1)\nrender(o1)")
-    driver.execute_script("osc(6, 0, 0.8) .color(1.14, 0.6,.80).rotate(0.92, 0.3).pixelate(20, 10).mult(osc(40, 0.03).thresh(0.4).rotate(0, -0.02)).modulateRotate(osc(20, 0).thresh(0.3, 0.6), () => 0.1 + mouse.x * 0.002).out(o0)")
-    live = Live(generate_table(dial_1,dial_2), refresh_per_second=4)
-    device = evdev.InputDevice('/dev/input/event0')
-    
-    with Live(generate_table(dial_1,dial_2), refresh_per_second=4) as live:  # update 4 times a second to feel fluid
-        for event in device.read_loop():
-            if event.type == evdev.ecodes.EV_KEY:
-                key_event = categorize(event)
-                
-                if key_event.keystate == key_event.key_down:
-                    if key_event.keycode == 'KEY_F':
-                        # Increment the variable when 'a' is pressed 
-                        dial_1 = decrement(dial_1)
-                    elif key_event.keycode == 'KEY_J':
-                        # Decrement the variable when 'd' is pressed 
-                        dial_1 = increment(dial_1)
-                    
-
-                    final_script = f"osc({dial_1/10}, 0, 0.8) .color(1.14, 0.6,.80).rotate(0.92, 0.3).pixelate(20, 10).mult(osc({dial_2}, 0.03).thresh(0.4).rotate(0, -0.02)).modulateRotate(osc(20, 0).thresh(0.3, 0.6), () => 0.1 + mouse.x * 0.002).out(o0)"
-                    live.console.print(f"{final_script}")
-                    # Display the current value of the variable
-                    live.update(generate_table(dial_1, dial_2))
-                    driver.execute_script(f"osc({dial_1/10}, 0, 0.8) .color(1.14, 0.6,.80).rotate(0.92, 0.3).pixelate(20, 10).mult(osc({dial_2}, 0.03).thresh(0.4).rotate(0, -0.02)).modulateRotate(osc(20, 0).thresh(0.3, 0.6), () => 0.1 + mouse.x * 0.002).out(o0)")
-
+    # driver.execute_script(currEffect.getFinalCommand())
+    driver.execute_script(currEffect.getFinalCommand())
+    listener = keyboard.Listener(on_press=on_press) 
+    listener.start()
+    keypress_event.clear()
+    while True:
+        # Display the current value of the variable
+        keypress_event.wait()
+        print('changing to {ind}')
+        driver.execute_script(currEffect.getFinalCommand())
+        print(currEffect.getFinalCommand())
+        keypress_event.clear()
+    listener.join()
 
 
